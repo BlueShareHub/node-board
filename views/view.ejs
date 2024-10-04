@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>게시글 상세 보기</title>
+  <!-- Bootstrap CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Font Awesome CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      font-size: 15px;
+      background-color: #f0f8ff;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin-top: 30px;
+      background-color: #ffffff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .page-title {
+      text-align: center;
+      font-weight: bold;
+      padding-bottom: 10px;
+    }
+
+    .post-meta {
+      color: #6c757d;
+      margin-bottom: 20px;
+      text-align: right;
+    }
+
+    .post-title {
+      font-weight: bold;
+      margin-bottom: 15px;
+      font-size: 20px;
+    }
+
+    .post-content {
+      margin-bottom: 20px;
+    }
+
+    .btn-group {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .btn-left {
+      display: flex;
+      gap: 10px;
+    }
+
+    .small-input {
+      max-width: 300px;
+    }
+
+    /* 댓글 영역 스타일 */
+    .comment-section {
+      background-color: #f4f4f4;
+      padding: 15px;
+      border-radius: 8px;
+      margin: 30px 10px;
+    }
+
+    .comment-item {
+      border-bottom: 1px solid #ddd;
+      padding: 10px 0;
+      margin-bottom: 10px;
+    }
+
+    .comment-author {
+      font-weight: bold;
+    }
+
+    .comment-timestamp {
+      color: #999;
+      font-size: 0.9em;
+      margin-left: 10px;
+    }
+
+    .comment-content {
+      padding: 5px;
+    }
+
+    .comment-form {
+      background-color: #ffffff;
+      border: 1px solid;
+      margin-top: 30px;
+      padding: 20px;
+    }
+
+    .comment-form-group {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .comment-form-group label {
+      margin-right: 10px;
+      min-width: 100px;
+    }
+
+    .comment-form-group input {
+      flex: 1;
+    }
+
+    .char-count {
+      margin-left: 5px;
+      font-size: 13px;
+    }
+
+    label {
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+    <h1 class="page-title">게시글</h1>
+
+    <!-- 게시글 정보 -->
+    <div class="post-meta">
+      번호: <%= post.id %> | 작성자: <%= post.author %> | 작성일: <%= new Date(post.created_at).toLocaleString() %> | 조회수: <%= post.views %> | 댓글수: <%= comments.length %>
+    </div>
+
+    <!-- 제목 -->
+    <div class="post-title">
+      제목: <%= post.title %>
+    </div>
+
+    <!-- 내용 -->
+    <div class="post-content">
+      <textarea class="form-control" rows="10" readonly><%= post.content %></textarea>
+    </div>
+
+    <!-- 버튼 그룹 -->
+    <div class="btn-group">
+      <div class="btn-left">
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editModal">
+          <i class="fas fa-edit"></i> 수정하기
+        </button>
+        <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+          <i class="fas fa-trash-alt"></i> 삭제하기
+        </button>
+        <button class="btn btn-secondary" onclick="location.href='/board/list'">
+          <i class="fas fa-list"></i> 목록보기
+        </button>
+      </div>
+    </div>
+
+    <!-- 댓글 리스트 -->
+    <div class="comment-section">
+      <% comments.forEach((comment)=> { %>
+        <div class="comment-item">
+          <span class="comment-author">
+            <%= comment.author %>
+          </span>
+          <span class="comment-timestamp">
+            <%= new Date(comment.created_at).toLocaleString() %>
+          </span>
+          <button class="btn btn-danger btn-sm float-end" data-bs-toggle="modal" data-bs-target="#deleteCommentModal-<%= comment.id %>">
+            <i class="fas fa-trash-alt"></i> 삭제
+          </button>
+          <div class="comment-content">
+            <%= comment.content %>
+          </div>
+        </div>
+
+        <!-- 댓글 삭제 확인 모달 -->
+        <div class="modal fade" id="deleteCommentModal-<%= comment.id %>" tabindex="-1" aria-labelledby="deleteCommentModalLabel-<%= comment.id %>" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="deleteCommentModalLabel-<%= comment.id %>">댓글 삭제</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <p>댓글을 삭제하려면 비밀번호를 입력해주세요.</p>
+                <input type="password" id="deleteCommentPassword-<%= comment.id %>" class="form-control" placeholder="비밀번호" maxlength="20">
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                <button type="button" class="btn btn-danger" onclick="submitDeleteCommentForm(<%= comment.id %>)">삭제</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <form id="deleteCommentForm-<%= comment.id %>" method="POST" action="/board/delete_comment" style="display: none;">
+          <input type="hidden" name="comment_id" value="<%= comment.id %>">
+          <input type="hidden" name="password" id="deleteCommentPasswordInput-<%= comment.id %>">
+          <input type="hidden" name="post_id" value="<%= post.id %>">
+        </form>
+      <% }); %>
+
+      <!-- 댓글 작성 폼 -->
+      <div class="comment-form">
+        <form action="/board/view/<%= post.id %>" method="POST" onsubmit="return validatePassword()">
+          <input type="hidden" name="post_id" value="<%= post.id %>">
+          <!-- 댓글 입력 -->
+          <div class="form-group-textarea">
+            <textarea class="form-control" id="content" name="content" rows="7" maxlength="1000" required placeholder="댓글을 입력하세요" oninput="updateCommentCharCount()"></textarea>
+            <span class="char-count"><span id="commentCharCount">0</span>/1000</span>
+          </div>
+
+          <!-- 작성자 입력 -->
+          <div class="comment-form-group">
+            <label for="author">작성자</label>
+            <input type="text" class="form-control small-input" id="author" name="author" maxlength="20" required placeholder="작성자를 입력하세요">
+          </div>
+
+          <!-- 비밀번호 입력 -->
+          <div class="comment-form-group">
+            <label for="password">비밀번호</label>
+            <input type="password" class="form-control small-input" id="password" name="password" maxlength="20" required placeholder="비밀번호를 입력하세요">
+            <div style="color: red; margin-left: 5px;">※ 비밀번호를 잊어버리면 삭제가 불가능하니 주의하세요.</div>
+          </div>
+
+          <!-- 비밀번호 확인 -->
+          <div class="comment-form-group">
+            <label for="confirm_password">비밀번호 확인</label>
+            <input type="password" class="form-control small-input" id="confirm_password" name="confirm_password" maxlength="20" required placeholder="비밀번호를 다시 입력하세요">
+            <div id="passwordMismatch" style="color: red; display: none;">비밀번호가 일치하지 않습니다.</div>
+          </div>
+
+          <button type="submit" class="btn btn-primary submit-button-margin">
+            <i class="fas fa-comment"></i> 댓글 달기
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- 풋터 -->
+    <div class="text-center mt-4" style="font-weight: bold; font-size: 16px;">
+      Copyright © 2024. BlueShare All rights reserved.
+    </div>
+
+    <!-- 수정 확인 모달 -->
+    <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="editModalLabel">게시글 수정</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <p>게시글을 수정하려면 비밀번호를 입력해주세요.</p>
+            <input type="password" id="editPassword" class="form-control" placeholder="비밀번호" maxlength="20">
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+            <button type="button" class="btn btn-primary" onclick="submitEditForm()">확인</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <form id="editForm" method="POST" action="/board/edit_password_check/<%= post.id %>">
+      <input type="hidden" name="id" value="<%= post.id %>">
+      <input type="hidden" name="password" id="editPasswordInput">
+    </form>
+
+    <!-- 삭제 확인 모달 -->
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="deleteModalLabel">게시글 삭제</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal">취소</button>
+          </div>
+          <div class="modal-body">
+            <p>게시글을 삭제하려면 비밀번호를 입력해주세요.</p>
+            <input type="password" id="deletePassword" class="form-control" placeholder="비밀번호" maxlength="20">
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+            <button type="button" class="btn btn-danger" onclick="submitDeleteForm()">삭제</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <form id="deleteForm" method="POST" action="/board/delete" style="display: none;">
+    <input type="hidden" name="id" value="<%= post.id %>">
+    <input type="hidden" name="password" id="deletePasswordInput">
+  </form>
+
+  <script>
+    function submitEditForm() {
+      const password = document.getElementById('editPassword').value;
+      if (!password) {
+        alert('비밀번호를 입력해주세요.');
+        return;
+      }
+      document.getElementById('editPasswordInput').value = password;
+      document.getElementById('editForm').submit();
+    }
+
+    function submitDeleteForm() {
+      const password = document.getElementById('deletePassword').value;
+
+      if (!password) {
+        alert('비밀번호를 입력해주세요.');
+        return;
+      }
+
+      document.getElementById('deletePasswordInput').value = password;
+      document.getElementById('deleteForm').submit();
+    }
+
+    // 댓글 글자 수 체크
+    function updateCommentCharCount() {
+      const commentInput = document.getElementById('content');
+      const commentCharCount = document.getElementById('commentCharCount');
+      commentCharCount.textContent = commentInput.value.length;
+    }
+
+    // 비밀번호 확인
+    function validatePassword() {
+      const password = document.getElementById('password').value;
+      const confirmPassword = document.getElementById('confirm_password').value;
+
+      if (password !== confirmPassword) {
+        document.getElementById('passwordMismatch').style.display = 'block';
+        return false;
+      }
+
+      return true;
+    }
+
+    // 댓글 삭제 처리
+    function submitDeleteCommentForm(commentId) {
+      const password = document.getElementById(`deleteCommentPassword-${commentId}`).value;
+      if (!password) {
+        alert('비밀번호를 입력해주세요.');
+        return;
+      }
+      document.getElementById(`deleteCommentPasswordInput-${commentId}`).value = password;
+      document.getElementById(`deleteCommentForm-${commentId}`).submit();
+    }
+  </script>
+
+</body>
+
+</html>
