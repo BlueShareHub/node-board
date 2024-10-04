@@ -76,6 +76,8 @@ npm start
 
 7. 이제 브라우저에서 `http://localhost:3000/board/list`를 열어 게시판을 확인할 수 있습니다.
 
+<br>
+
 ※ 적용된 게시판 페이지 예시: [https://bluesharehub.com/board/list.php?access=blueshare_board](https://bluesharehub.com/board/list.php?access=blueshare_board)
 
 <br>
